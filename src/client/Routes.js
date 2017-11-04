@@ -1,17 +1,17 @@
 
 import React from 'react';
-import Home from './components/Home';
-import UsersList from './components/UsersList';
+import HomePage from './pages/HomePage';
+import UsersListPage from './pages/UsersListPage';
 
 // required as part of 'react-router-config' -> cannot use JSX
 export default [
     {
         path: '/',
-        component: Home,
+        component: HomePage,
         exact: true
     },
     {
         path: '/users',
-        component: UsersList
+        ...UsersListPage
     }
 ];
