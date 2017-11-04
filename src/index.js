@@ -20,10 +20,12 @@ app.use(express.static('public'));
 app.get('*', (req, res) => {
     const store = createStore(req);
 
+    // change states as required
     const promises = matchRoutes(Routes, req.path).map(({ route }) => {
         return route.loadData ? route.loadData(store) : null;
     });
 
+    // render the corresponding component
     Promise.all(promises).then(() => {
         res.send(renderer(req, store));
     });
