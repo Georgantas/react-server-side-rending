@@ -329,6 +329,10 @@ app.get('*', function (req, res) {
         var context = {};
         var content = (0, _renderer2.default)(req, store, context);
 
+        if (context.url) {
+            return res.redirect(301, context.url);
+        }
+
         if (context.notFound) {
             res.status(404);
         }
@@ -384,6 +388,8 @@ var _serializeJavascript2 = _interopRequireDefault(_serializeJavascript);
 
 var _reactRouterConfig = __webpack_require__(1);
 
+var _reactHelmet = __webpack_require__(28);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = function (req, store, context) {
@@ -401,7 +407,9 @@ exports.default = function (req, store, context) {
         )
     ));
 
-    return '\n        <html>\n            <head>\n                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">            \n            </head>\n            <body>\n                <div id="root">' + content + '</div>\n                <script>\n                    window.INITIAL_STATE = ' + (0, _serializeJavascript2.default)(store.getState()) + '\n                </script>\n                <script src="bundle.js"></script>\n            </body>\n        </html>\n    '; // bundle will be fetched from public since app.use(express.static('public')) specifies it
+    var helmet = _reactHelmet.Helmet.renderStatic();
+
+    return '\n        <html>\n            <head>\n                ' + helmet.title.toString() + '\n                ' + helmet.meta.toString() + '\n                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">            \n            </head>\n            <body>\n                <div id="root">' + content + '</div>\n                <script>\n                    window.INITIAL_STATE = ' + (0, _serializeJavascript2.default)(store.getState()) + '\n                </script>\n                <script src="bundle.js"></script>\n            </body>\n        </html>\n    '; // bundle will be fetched from public since app.use(express.static('public')) specifies it
 };
 
 /***/ }),
@@ -598,6 +606,8 @@ var _reactRedux = __webpack_require__(4);
 
 var _actions = __webpack_require__(5);
 
+var _reactHelmet = __webpack_require__(28);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -633,11 +643,26 @@ var UsersList = function (_Component) {
             });
         }
     }, {
+        key: 'head',
+        value: function head() {
+            return _react2.default.createElement(
+                _reactHelmet.Helmet,
+                null,
+                _react2.default.createElement(
+                    'title',
+                    null,
+                    this.props.users.length + ' Users Loaded'
+                ),
+                _react2.default.createElement('meta', { property: 'og:title', content: 'Users App' })
+            );
+        }
+    }, {
         key: 'render',
         value: function render() {
             return _react2.default.createElement(
                 'div',
                 null,
+                this.head(),
                 'Here\'s a big list of users:',
                 _react2.default.createElement(
                     'ul',
@@ -888,6 +913,10 @@ var _reactRedux = __webpack_require__(4);
 
 var _actions = __webpack_require__(5);
 
+var _requireAuth = __webpack_require__(27);
+
+var _requireAuth2 = _interopRequireDefault(_requireAuth);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -951,12 +980,87 @@ function mapStateToProps(_ref) {
 }
 
 exports.default = {
-    component: (0, _reactRedux.connect)(mapStateToProps, { fetchAdmins: _actions.fetchAdmins })(AdminsListPage),
+    component: (0, _reactRedux.connect)(mapStateToProps, { fetchAdmins: _actions.fetchAdmins })((0, _requireAuth2.default)(AdminsListPage)),
     loadData: function loadData(_ref2) {
         var dispatch = _ref2.dispatch;
         return dispatch((0, _actions.fetchAdmins)());
     }
 };
+
+/***/ }),
+/* 27 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _react = __webpack_require__(0);
+
+var _react2 = _interopRequireDefault(_react);
+
+var _reactRedux = __webpack_require__(4);
+
+var _reactRouterDom = __webpack_require__(2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+exports.default = function (ChildComponent) {
+    var RequireAuth = function (_Component) {
+        _inherits(RequireAuth, _Component);
+
+        function RequireAuth() {
+            _classCallCheck(this, RequireAuth);
+
+            return _possibleConstructorReturn(this, (RequireAuth.__proto__ || Object.getPrototypeOf(RequireAuth)).apply(this, arguments));
+        }
+
+        _createClass(RequireAuth, [{
+            key: 'render',
+            value: function render() {
+                switch (this.props.auth) {
+                    case false:
+                        return _react2.default.createElement(_reactRouterDom.Redirect, { to: '/' });
+                    case null:
+                        return _react2.default.createElement(
+                            'div',
+                            null,
+                            'Loading...'
+                        );
+                    default:
+                        return _react2.default.createElement(ChildComponent, this.props);
+                }
+            }
+        }]);
+
+        return RequireAuth;
+    }(_react.Component);
+
+    function mapStateToProps(_ref) {
+        var auth = _ref.auth;
+
+        return { auth: auth };
+    }
+
+    return (0, _reactRedux.connect)(mapStateToProps)(RequireAuth);
+};
+
+/***/ }),
+/* 28 */
+/***/ (function(module, exports) {
+
+module.exports = require("react-helmet");
 
 /***/ })
 /******/ ]);
